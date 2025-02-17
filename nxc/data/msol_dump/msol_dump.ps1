@@ -85,8 +85,10 @@ $tmpFileName = [IO.Path]::GetFileNameWithoutExtension([System.IO.Path]::GetRando
 $tmpFilePath = "C:\Temp\" + $tmpFileName + ".ps1"
 Write-Host "[*] Creating temporary file $tmpFilePath"
 
+$createTemp = $false
 if (-Not (Test-Path -Path "C:\Temp")) {
     New-Item -Path "C:\Temp" -ItemType Directory | Out-Null
+    $createTemp = $true
 }
 New-Item $tmpFilePath -ItemType File | Out-Null
 Add-Content $tmpFilePath "`$crypted = `"$crypted`""
@@ -126,7 +128,9 @@ if ($decrypted -eq [string]::Empty) {
 }
 
 Remove-Item $tmpFilePath
-Remove-Item "C:\Temp"
+if ($createTemp -eq $true) {
+    Remove-Item "C:\Temp"
+}
 
 $domain = select-xml -Content $config -XPath "//parameter[@name='forest-login-domain']" | select @{Name = 'Domain'; Expression = {$_.node.InnerText}}
 $username = select-xml -Content $config -XPath "//parameter[@name='UserName']" | select @{Name = 'Username'; Expression = {$_.node.InnerText}}
